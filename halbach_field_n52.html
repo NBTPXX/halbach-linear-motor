@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>N52 Halbach 磁场图</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#64748b; --card:#fff; --bg:#eef2f7; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { max-width:1440px; margin:auto; padding:24px; }
+    h1 { margin:0 0 6px; font-size:clamp(22px,3vw,34px); }
+    .intro { margin:0 0 18px; color:var(--muted); }
+    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+    button { border:1px solid #cbd5e1; background:#fff; border-radius:8px; padding:8px 13px; cursor:pointer; color:var(--ink); }
+    button.active { color:#fff; background:#2563eb; border-color:#2563eb; }
+    .readout { margin-left:auto; color:#334155; font-variant-numeric:tabular-nums; }
+    .card { background:var(--card); border-radius:14px; box-shadow:0 4px 18px #64748b22; padding:14px; overflow:auto; }
+    .field-map { display:block; width:100%; max-width:1180px; margin:auto; height:auto; }
+    .notes { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:10px; margin-top:14px; }
+    .note { background:#fff; border-radius:10px; padding:12px 14px; color:#475569; line-height:1.55; }
+    .key { font-weight:700; color:#172033; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>N52 Halbach 阵列磁场强度图</h1>
+  <p class="intro">每张图均为 N52 有限五组磁铁阵列与 DXF 原始单个铁芯轮廓的二维磁静态求解结果，单位 mT。铁芯旋转 180° 后置于磁铁上方，并与磁铁阵列以 DXF 铁芯几何中心对齐。</p>
+  <div class="toolbar" aria-label="Halbach 配比">
+    <button class="mapButton active" data-map="6_6">6 : 6</button>
+    <button class="mapButton" data-map="8_4">8 : 4</button>
+    <button class="mapButton" data-map="10_2">10 : 2</button>
+    <button class="mapButton" data-map="11_1">11 : 1</button>
+    <button class="mapButton" data-map="10_2_no_side">10 : 2 无侧片</button>
+    <button class="mapButton" data-map="10_2_skew">10 : 2 斜贴 26.6°</button>
+    <span id="mapLabel" class="readout">6 : 6 基础 Halbach</span>
+  </div>
+  <div class="card"><img id="fieldMap" class="field-map" src="halbach_field_6_6_top_core.png" alt="N52 Halbach 与 DXF 铁芯的二维磁静态磁场图"></div>
+  <div class="card" style="margin-top:14px"><img id="motionMap" class="field-map" src="cogging_motion_6_6.gif" alt="6比6 Halbach 铁芯运动与齿槽力动画"></div>
+  <p id="motionStatus" class="intro" style="margin:8px 0 0">6 : 6 基础 Halbach 动画已加载。</p>
+  <div class="card" style="margin-top:14px"><img id="forceCurve" class="field-map" src="cogging_force_curve_6_6.png" alt="6比6 Halbach 齿槽力随位置变化曲线"></div>
+  <div class="notes">
+    <div class="note"><span class="key">⭕</span> 表示磁化方向出屏，主磁铁为 +Z，N 极朝上。</div>
+    <div class="note"><span class="key">❌</span> 表示磁化方向入屏，主磁铁为 -Z，S 极朝上。</div>
+    <div class="note">侧片方向：N 极朝向相邻的 N 极朝上的主磁铁，接缝序列为 -Y、+Y、-Y。</div>
+    <div class="note">6:6 为 24 mm 磁极对内的 +Z、-Y、-Z、+Y 四段基础 Halbach。独立的周期齿槽力估算采用 DXF 铁芯轮廓并连续叠厚积分：零斜极为 1.726 N 峰峰值，14.04° 为约 0.193 N，26.565° 为理想线性周期模型约 0.0010 N。它优先提升单侧磁通。</div>
+    <div class="note"><span class="key">斜极取舍</span>：14.04° 的磁场基波系数约 0.955，适合推力优先；26.565° 的系数约 0.827，适合齿槽力优先。实际残余力由 B-H 曲线、端部磁通、加工与装配误差决定。</div>
+    <div class="note">色图由二维磁矢势方程求解：DXF 闭合轮廓在网格内赋予 35W300 的线性 μr≈4000，气隙为 1 mm，磁铁厚度为 3 mm。铁芯绕其中心旋转 180°，齿顶位于磁铁顶面上方 1 mm。求解域随五组磁铁阵列扩展，四周采用远离模型的固定磁矢势边界；铁芯位于画面中心，左右侧磁铁单元数相同，所有磁铁块均绘制轮廓。</div>
+    <div class="note">每种磁铁排布均提供 90 帧动画，展示铁芯按 -24 mm、+24 mm、-24 mm 的顺序往复运动。白色箭头表示计算得到的齿槽力方向，箭头长度随力值绝对值变化，箭头上方显示当前位置与瞬时齿槽力。动画下方曲线给出齿槽力 F 随位置 x 的变化。</div>
+  </div>
+</main>
+<script type="application/json">
+const canvas = document.querySelector('#field'), ctx = canvas.getContext('2d');
+const readout = document.querySelector('#readout');
+const mu0Over4Pi = 1e-7, Br = 1.45, pxmm = 8;
+let sources = [], hasSideMagnets = true, mainWidth = 10, skewed = false, magnetLength = 20, skewAngle = 0, skewCos = 1, skewSin = 0, activeScenario = null;
+const sideWidth = () => 12 - mainWidth;
+const scenarios = {
+  halbach66: { type:'halbach', cogging:'线性二维齿槽力估算：1.712 N 峰峰值' },
+  zero: { angle:0, length:20, cogging:'齿槽力估算：1.084 N 峰峰值' },
+  small: { angle:6.87, length:20, cogging:'齿槽力估算：0.522 N 峰峰值' },
+  large: { angle:26.6, length:15, cogging:'齿槽力估算：0.217 N 峰峰值' },
+};
+function setSkewGeometry(angle,length) { skewAngle=angle;magnetLength=length;skewCos=Math.cos(angle*Math.PI/180);skewSin=Math.sin(angle*Math.PI/180); }
+function addBlock(x0,y0,z0,w,d,h,dx,dy,dz) {
+  const sx=Math.min(2,w), sy=Math.min(2,d), sz=Math.min(1.5,h);
+  for (let x=x0+sx/2;x<x0+w;x+=sx) for (let y=y0+sy/2;y<y0+d;y+=sy) for (let z=z0+sz/2;z<z0+h;z+=sz) {
+    const moment=Br*(sx*sy*sz*1e-9)/(4*Math.PI*1e-7);
+    sources.push([x,y,z,dx*moment,dy*moment,dz*moment]);
+  }
+}
+function addSkewBlock(x0,y0,z0,w,d,h,dz) {
+  for (let x=x0;x<x0+w;) {
+    const sx=Math.min(2,x0+w-x);
+    for (let y=y0;y<y0+d;) {
+      const sy=Math.min(2,y0+d-y);
+      for (let z=z0;z<z0+h;) {
+        const sz=Math.min(1.5,z0+h-z), centerX=x+sx/2, centerY=y+sy/2, centerZ=z+sz/2;
+        const moment=Br*(sx*sy*sz*1e-9)/(4*Math.PI*1e-7);
+        const localX=centerX-(x0+w/2), localY=centerY-(y0+d/2);
+        const rotatedX=x0+w/2+localX*skewCos-localY*skewSin;
+        const rotatedY=y0+d/2+localX*skewSin+localY*skewCos;
+        sources.push([rotatedX,rotatedY,centerZ,0,0,dz*moment]);
+        z+=sz;
+      }
+      y+=sy;
+    }
+    x+=sx;
+  }
+}
+function skewPoint(y0,u,v) {
+  const x0=(20-magnetLength)/2, localX=u-magnetLength/2, localY=v-5;
+  return [10+localX*skewCos-localY*skewSin, y0+5+localX*skewSin+localY*skewCos];
+}
+function buildSources(includeSides) {
+  sources = [];
+  for (let i=0;i<4;i++) {
+    const y=i*12, z=i%2===0?1:-1;
+    if (skewed) addSkewBlock((20-magnetLength)/2,y,0,magnetLength,10,3,z);
+    else {
+      addBlock(0,y,0,20,mainWidth,3,0,0,z);
+      if (includeSides && i<3) { const sy=i%2===0?-1:1; addBlock(0,y+mainWidth,0,10,sideWidth(),3,0,sy,0); addBlock(10,y+mainWidth,0,10,sideWidth(),3,0,sy,0); }
+    }
+  }
+}
+buildSources(true);
+function field(x,y,z) {
+  let bx=0,by=0,bz=0;
+  for (const [sx,sy,sz,mx,my,mz] of sources) {
+    const rx=(x-sx)*1e-3, ry=(y-sy)*1e-3, rz=(z-sz)*1e-3, r2=rx*rx+ry*ry+rz*rz, r=Math.sqrt(r2), r3=r2*r, r5=r2*r2*r, dot=mx*rx+my*ry+mz*rz;
+    bx+=mu0Over4Pi*(3*rx*dot/r5-mx/r3); by+=mu0Over4Pi*(3*ry*dot/r5-my/r3); bz+=mu0Over4Pi*(3*rz*dot/r5-mz/r3);
+  }
+  return Math.sqrt(bx*bx+by*by+bz*bz)*1e3;
+}
+function vectorField(x,y,z) {
+  let bx=0,by=0,bz=0;
+  for (const [sx,sy,sz,mx,my,mz] of sources) {
+    const rx=(x-sx)*1e-3, ry=(y-sy)*1e-3, rz=(z-sz)*1e-3, r2=rx*rx+ry*ry+rz*rz, r=Math.sqrt(r2), r3=r2*r, r5=r2*r2*r, dot=mx*rx+my*ry+mz*rz;
+    bx+=mu0Over4Pi*(3*rx*dot/r5-mx/r3); by+=mu0Over4Pi*(3*ry*dot/r5-my/r3); bz+=mu0Over4Pi*(3*rz*dot/r5-mz/r3);
+  }
+  return [bx,by,bz];
+}
+function color(v) {
+  const t=Math.max(0,Math.min(1,(Math.log10(Math.max(2,v))-Math.log10(2))/(Math.log10(800)-Math.log10(2))));
+  const stops=[[18,40,90],[0,184,220],[255,226,0],[220,35,35]], q=t*3, i=Math.min(2,Math.floor(q)), f=q-i, a=stops[i],b=stops[i+1];
+  return `rgb(${a.map((n,k)=>Math.round(n+(b[k]-n)*f)).join(',')})`;
+}
+function text(s,x,y,size=16,fill='#172033',align='left') { ctx.fillStyle=fill;ctx.font=`600 ${size}px system-ui,sans-serif`;ctx.textAlign=align;ctx.fillText(s,x,y); }
+function symbol(x,y,out) { ctx.strokeStyle='#fff';ctx.lineWidth=3; if(out){ctx.beginPath();ctx.arc(x,y,14,0,Math.PI*2);ctx.stroke();}else{ctx.beginPath();ctx.moveTo(x-11,y-11);ctx.lineTo(x+11,y+11);ctx.moveTo(x+11,y-11);ctx.lineTo(x-11,y+11);ctx.stroke();} }
+function inMagnet(y,z) { for(let i=0;i<4;i++){if(y>=i*12&&y<=i*12+mainWidth&&z>=0&&z<=3)return true;if(hasSideMagnets&&i<3&&y>=i*12+mainWidth&&y<=i*12+12&&z>=0&&z<=3)return true;}return false; }
+function streamline(seed, project, bounds, mapper, toCanvas) {
+  const trace=(direction)=>{
+    let p=[...seed], points=[];
+    for(let n=0;n<170;n++){
+      if(p[0]<bounds[0]||p[0]>bounds[1]||p[1]<bounds[2]||p[1]>bounds[3])break;
+      const [vx,vy,vz]=vectorField(...project(p)); const v=mapper(vx,vy,vz), mag=Math.hypot(...v);
+      if(mag<1e-12)break; points.push([...p]); p[0]+=direction*v[0]/mag*.42;p[1]+=direction*v[1]/mag*.42;
+    } return points;
+  };
+  const a=trace(-1).reverse(), b=trace(1), points=a.concat(b.slice(1)); if(points.length<4)return;
+  ctx.beginPath(); points.forEach((p,i)=>{const q=toCanvas(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();
+}
+function drawFieldLines(seeds, project, bounds, mapper, toCanvas) {
+  ctx.save();ctx.strokeStyle='rgba(255,255,255,.82)';ctx.lineWidth=1.15;ctx.setLineDash([4,3]);
+  for(const seed of seeds)streamline(seed,project,bounds,mapper,toCanvas);ctx.restore();
+}
+function drawStatorCore(x0,y0,ymin,zmin,viewHeight) {
+  const rect=(y,z,w,h)=>ctx.fillRect(x0+(y-ymin)*pxmm,y0+(zmin+viewHeight-z-h)*pxmm,w*pxmm,h*pxmm);
+  const outline=(y,z,w,h)=>ctx.strokeRect(x0+(y-ymin)*pxmm,y0+(zmin+viewHeight-z-h)*pxmm,w*pxmm,h*pxmm);
+  ctx.save();
+  ctx.fillStyle='rgba(51,65,85,.9)';ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1.5;
+  rect(-5,-19.5,58,6.5);
+  for(const toothY of [0,16,32]) rect(toothY,-13,5,12);
+  outline(-5,-19.5,58,6.5);
+  for(const toothY of [0,16,32]) outline(toothY,-13,5,12);
+  ctx.restore();
+}
+function drawSide(x0,y0) {
+  const ymin=-5,zmin=-22,viewHeight=32,w=56*pxmm,h=viewHeight*pxmm;text('侧视图 | 4 个磁极 / 3 齿铁芯',x0,y0-18,20);text(skewed?'Y: 48 mm   磁铁厚 3 mm   气隙 1 mm   斜极中心截面':'Y: 48 mm   磁铁厚 3 mm   气隙 1 mm   齿宽 5 mm / 槽距 16 mm',x0,y0-1,13,'#64748b');
+  for(let py=0;py<h;py+=2)for(let px=0;px<w;px+=2){const yy=ymin+(px+1)/pxmm,zz=zmin+(h-py-1)/pxmm;ctx.fillStyle=color(field(10,yy,zz));ctx.fillRect(x0+px,y0+py,2,2);}
+  const sideSeeds=[];
+  // Dense seeds just above and below the 3 mm magnets reveal near-field loops.
+  for(let y=-4;y<=50;y+=.8)sideSeeds.push([y,3.45],[y,-.45]);
+  // Sparse perimeter seeds preserve the long-range flux structure.
+  for(let y=-4;y<=50;y+=2)sideSeeds.push([y,-21],[y,9]);
+  for(let z=-20;z<=9;z+=2)sideSeeds.push([-4,z],[50,z]);
+  drawFieldLines(sideSeeds,p=>[10,p[0],p[1]],[ymin,ymin+56,zmin,zmin+viewHeight],(bx,by,bz)=>[by,bz],p=>[x0+(p[0]-ymin)*pxmm,y0+(zmin+viewHeight-p[1])*pxmm]);
+  drawStatorCore(x0,y0,ymin,zmin,viewHeight);
+  for(let i=0;i<4;i++){const y=i*12, cx=x0+(y+mainWidth/2-ymin)*pxmm;ctx.strokeStyle='#fff';ctx.lineWidth=2;if(skewed){const cutWidth=10/skewCos, cutY=y+5-cutWidth/2;ctx.strokeRect(x0+(cutY-ymin)*pxmm,y0+(zmin+viewHeight-3)*pxmm,cutWidth*pxmm,3*pxmm);}else{ctx.strokeRect(x0+(y-ymin)*pxmm,y0+(zmin+viewHeight-3)*pxmm,mainWidth*pxmm,3*pxmm);if(hasSideMagnets&&i<3)ctx.strokeRect(x0+(y+mainWidth-ymin)*pxmm,y0+(zmin+viewHeight-3)*pxmm,sideWidth()*pxmm,3*pxmm);}symbol(cx,y0+(zmin+viewHeight-1.5)*pxmm,i%2===0);}
+  return {x0,y0,w,h,xmin:ymin,ymin:zmin,kind:'side'};
+}
+let sideBox;
+function render(){ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);const isHalbach66=activeScenario?.type==='halbach', title=skewed?'N52 SKEWED 10:2 ARRAY FIELD MAP':isHalbach66?'N52 6:6 BASIC HALBACH FIELD MAP':hasSideMagnets?'N52 HALBACH ARRAY FIELD MAP':'N52 FOUR MAIN MAGNETS - NO SIDE TILES';const detail=skewed?`${magnetLength} × 10 × 3 mm 长方体 | ${skewAngle.toFixed(2)}° 整体旋转 | ${activeScenario?.cogging ?? ''}    ⭕ +Z / ❌ -Z    |B|（mT）`:hasSideMagnets?`主磁铁 ${mainWidth} mm + 侧片 ${sideWidth()} mm = 单元总宽度 12 mm${isHalbach66?` | ${activeScenario.cogging}`:''}    ⭕ +Z / ❌ -Z    |B|（mT）`:'⭕ +Z 出屏 / ❌ -Z 入屏    已移除全部侧片磁铁';text(title,40,38,28);text(detail,40,68,16,'#475569');sideBox=drawSide(75,105);for(let i=0;i<240;i++){ctx.fillStyle=color(2*Math.pow(400,i/239));ctx.fillRect(280+i,500,1,14);}text('2 mT',275,537,13,'#475569');text('20',350,537,13,'#475569');text('100',435,537,13,'#475569');text('800 mT',510,537,13,'#475569');}
+function hit(e){const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*canvas.width/r.width,y=(e.clientY-r.top)*canvas.height/r.height,b=sideBox;if(b&&x>=b.x0&&x<=b.x0+b.w&&y>=b.y0&&y<=b.y0+b.h){const a=[10,b.xmin+(x-b.x0)/pxmm,b.ymin+(b.h-(y-b.y0))/pxmm];readout.textContent=`侧视  坐标 ${a.map(n=>n.toFixed(1)).join(', ')} mm   |B| ≈ ${field(...a).toFixed(1)} mT`;return;}readout.textContent='移动鼠标查看场强';}
+function clearScenario() { activeScenario=null;for(const button of document.querySelectorAll('.scenarioBtn'))button.classList.remove('active'); }
+function setMainWidth(value) { skewed=false;clearScenario();mainWidth=Number(value);document.querySelector('#mainWidth').value=mainWidth;document.querySelector('#ratioLabel').textContent=`${mainWidth} : ${sideWidth()} mm`;buildSources(hasSideMagnets);for(const button of document.querySelectorAll('.ratioBtn'))button.classList.toggle('active',Number(button.dataset.width)===mainWidth);render(); }
+function setScenario(name) { activeScenario=scenarios[name];if(activeScenario.type==='halbach'){skewed=false;mainWidth=6;hasSideMagnets=true;document.querySelector('#mainWidth').value=6;document.querySelector('#ratioLabel').textContent='6 : 6 mm';document.querySelector('#noSideBtn').textContent='无侧片磁铁';document.querySelector('#noSideBtn').classList.remove('active');for(const button of document.querySelectorAll('.ratioBtn'))button.classList.toggle('active',Number(button.dataset.width)===6);buildSources(true);}else{skewed=true;mainWidth=10;hasSideMagnets=false;setSkewGeometry(activeScenario.angle,activeScenario.length);document.querySelector('#mainWidth').value=10;document.querySelector('#ratioLabel').textContent='10 : 2 mm';document.querySelector('#noSideBtn').textContent='恢复侧片磁铁';document.querySelector('#noSideBtn').classList.add('active');buildSources(false);}for(const button of document.querySelectorAll('.scenarioBtn'))button.classList.toggle('active',button.dataset.scenario===name);render(); }
+canvas.addEventListener('mousemove',hit);document.querySelector('#noSideBtn').onclick=()=>{skewed=false;clearScenario();hasSideMagnets=!hasSideMagnets;buildSources(hasSideMagnets);const button=document.querySelector('#noSideBtn');button.textContent=hasSideMagnets?'无侧片磁铁':'恢复侧片磁铁';button.classList.toggle('active',!hasSideMagnets);render();};document.querySelector('#mainWidth').oninput=e=>setMainWidth(e.target.value);for(const button of document.querySelectorAll('.ratioBtn'))button.onclick=()=>setMainWidth(button.dataset.width);for(const button of document.querySelectorAll('.scenarioBtn'))button.onclick=()=>setScenario(button.dataset.scenario);setMainWidth(10);
+</script>
+<script>
+const fieldMaps = {
+  '6_6': { file: 'halbach_field_6_6_top_core.png', motion: 'cogging_motion_6_6.gif', curve: 'cogging_force_curve_6_6.png', label: '6 : 6 基础 Halbach' },
+  '8_4': { file: 'halbach_field_8_4_top_core.png', motion: 'cogging_motion_8_4.gif', curve: 'cogging_force_curve_8_4.png', label: '8 : 4 Halbach' },
+  '10_2': { file: 'halbach_field_10_2_top_core.png', motion: 'cogging_motion_10_2.gif', curve: 'cogging_force_curve_10_2.png', label: '10 : 2 Halbach' },
+  '11_1': { file: 'halbach_field_11_1_top_core.png', motion: 'cogging_motion_11_1.gif', curve: 'cogging_force_curve_11_1.png', label: '11 : 1 Halbach' },
+  '10_2_no_side': { file: 'halbach_field_10_2_no_side_top_core.png', motion: 'cogging_motion_10_2_no_side.gif', curve: 'cogging_force_curve_10_2_no_side.png', label: '10 : 2 无侧片磁铁' },
+  '10_2_skew': { file: 'halbach_field_10_2_skew_26_6_top_core.png', motion: 'cogging_motion_10_2_skew.gif', curve: 'cogging_force_curve_10_2_skew.png', label: '10 : 2 无侧片 26.6° 斜贴边缘截面' },
+};
+const fieldMap = document.querySelector('#fieldMap');
+const motionMap = document.querySelector('#motionMap');
+const forceCurve = document.querySelector('#forceCurve');
+const mapLabel = document.querySelector('#mapLabel');
+const motionStatus = document.querySelector('#motionStatus');
+const animationRevision = 'roundtrip-24-v1';
+for (const button of document.querySelectorAll('.mapButton')) {
+  button.onclick = () => {
+    const map = fieldMaps[button.dataset.map];
+    fieldMap.src = map.file;
+    fieldMap.alt = `${map.label} 与 DXF 铁芯的二维磁静态磁场图`;
+    motionStatus.textContent = `已选择 ${map.label} 动画。`;
+    motionMap.src = `${map.motion}?v=${animationRevision}`;
+    motionMap.alt = `${map.label} 铁芯运动与齿槽力动画`;
+    forceCurve.src = `${map.curve}?v=${animationRevision}`;
+    forceCurve.alt = `${map.label} 齿槽力随位置变化曲线`;
+    mapLabel.textContent = map.label;
+    for (const item of document.querySelectorAll('.mapButton')) item.classList.toggle('active', item === button);
+  };
+}
+</script>
+</body>
+</html>
