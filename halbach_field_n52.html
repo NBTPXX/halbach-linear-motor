@@ -32,12 +32,13 @@
     <button class="mapButton" data-map="10_2">10 : 2</button>
     <button class="mapButton" data-map="11_1">11 : 1</button>
     <button class="mapButton" data-map="10_2_no_side">10 : 2 无侧片</button>
+    <button class="mapButton" data-map="10_2_skew_14_04">10 : 2 斜贴 14.04°</button>
     <button class="mapButton" data-map="10_2_skew">10 : 2 斜贴 26.6°</button>
     <span id="mapLabel" class="readout">6 : 6 基础 Halbach</span>
   </div>
   <div class="card"><img id="fieldMap" class="field-map" src="halbach_field_6_6_top_core.png" alt="N52 Halbach 与 DXF 铁芯的二维磁静态磁场图"></div>
   <div class="card" style="margin-top:14px"><img id="motionMap" class="field-map" src="cogging_motion_6_6.gif" alt="6比6 Halbach 铁芯运动与齿槽力动画"></div>
-  <p id="motionStatus" class="intro" style="margin:8px 0 0">6 : 6 基础 Halbach 动画已加载。</p>
+  <p id="motionStatus" class="intro" style="margin:8px 0 0">已选择 6 : 6 基础 Halbach 动画。</p>
   <div class="card" style="margin-top:14px"><img id="forceCurve" class="field-map" src="cogging_force_curve_6_6.png" alt="6比6 Halbach 齿槽力随位置变化曲线"></div>
   <div class="notes">
     <div class="note"><span class="key">⭕</span> 表示磁化方向出屏，主磁铁为 +Z，N 极朝上。</div>
@@ -184,6 +185,7 @@ const fieldMaps = {
   '10_2': { file: 'halbach_field_10_2_top_core.png', motion: 'cogging_motion_10_2.gif', curve: 'cogging_force_curve_10_2.png', label: '10 : 2 Halbach' },
   '11_1': { file: 'halbach_field_11_1_top_core.png', motion: 'cogging_motion_11_1.gif', curve: 'cogging_force_curve_11_1.png', label: '11 : 1 Halbach' },
   '10_2_no_side': { file: 'halbach_field_10_2_no_side_top_core.png', motion: 'cogging_motion_10_2_no_side.gif', curve: 'cogging_force_curve_10_2_no_side.png', label: '10 : 2 无侧片磁铁' },
+  '10_2_skew_14_04': { file: 'halbach_field_10_2_skew_14_04_top_core.png', motion: 'cogging_motion_10_2_skew_14_04.gif', curve: 'cogging_force_curve_10_2_skew_14_04.png', label: '10 : 2 无侧片 14.04° 斜贴边缘截面' },
   '10_2_skew': { file: 'halbach_field_10_2_skew_26_6_top_core.png', motion: 'cogging_motion_10_2_skew.gif', curve: 'cogging_force_curve_10_2_skew.png', label: '10 : 2 无侧片 26.6° 斜贴边缘截面' },
 };
 const fieldMap = document.querySelector('#fieldMap');

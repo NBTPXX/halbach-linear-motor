@@ -35,5 +35,5 @@
 
 1. THE field-map generator SHALL render 6:6, 8:4, 10:2 and 11:1 Halbach configurations with side magnets.
 2. THE field-map generator SHALL render a 10:2 configuration without side magnets.
-3. THE field-map generator SHALL render a 10:2 configuration with a 26.6 degree skew angle.
-4. WHEN a viewer selects a field-map scenario, THE web page SHALL display the matching generated image and scenario label.
+3. THE field-map generator SHALL render 10:2 configurations with 14.04 degree and 26.6 degree skew angles.
+4. WHEN a viewer selects a field-map scenario, THE web page SHALL display the matching generated image, animation, force curve, and scenario label.
