@@ -40,6 +40,7 @@
   <div class="card" style="margin-top:14px"><img id="motionMap" class="field-map" src="cogging_motion_6_6.gif" alt="6比6 Halbach 铁芯运动与齿槽力动画"></div>
   <p id="motionStatus" class="intro" style="margin:8px 0 0">已选择 6 : 6 基础 Halbach 动画。</p>
   <div class="card" style="margin-top:14px"><img id="forceCurve" class="field-map" src="cogging_force_curve_6_6.png" alt="6比6 Halbach 齿槽力随位置变化曲线"></div>
+  <div class="card" style="margin-top:14px"><img id="thrustCurve" class="field-map" src="foc_thrust_curve_6_6.png" alt="6比6 Halbach 相同 Iq 下的 FOC 推力曲线"></div>
   <div class="notes">
     <div class="note"><span class="key">⭕</span> 表示磁化方向出屏，主磁铁为 +Z，N 极朝上。</div>
     <div class="note"><span class="key">❌</span> 表示磁化方向入屏，主磁铁为 -Z，S 极朝上。</div>
@@ -48,6 +49,7 @@
     <div class="note"><span class="key">斜极取舍</span>：14.04° 的磁场基波系数约 0.955，适合推力优先；26.565° 的系数约 0.827，适合齿槽力优先。实际残余力由 B-H 曲线、端部磁通、加工与装配误差决定。</div>
     <div class="note">色图由二维磁矢势方程求解：DXF 闭合轮廓在网格内赋予 35W300 的线性 μr≈4000，气隙为 1 mm，磁铁厚度为 3 mm。铁芯绕其中心旋转 180°，齿顶位于磁铁顶面上方 1 mm。求解域随五组磁铁阵列扩展，四周采用远离模型的固定磁矢势边界；铁芯位于画面中心，左右侧磁铁单元数相同，所有磁铁块均绘制轮廓。</div>
     <div class="note">每种磁铁排布均提供 200 帧动画，展示铁芯按 -24 mm、+24 mm、-24 mm 的顺序往复运动。曲线使用 100 个单程位置点计算。白色箭头表示计算得到的齿槽力方向，箭头长度随力值绝对值变化，箭头上方显示当前位置与瞬时齿槽力。动画下方曲线给出齿槽力 F 随位置 x 的变化。</div>
+    <div class="note"><span class="key">FOC 推力模型</span>：三齿三相集中绕组，每相 266 匝、0.4 mm 线径、有效叠厚 16 mm。图中使用 Iq=4 A 峰值的三次谐波注入马鞍波电流；推力由各齿气隙磁链的位置导数与瞬时相电流相乘计算，未叠加齿槽力。结果为二维线性磁路与默认相序下的设计比较值。</div>
   </div>
 </main>
 <script type="application/json">
@@ -180,17 +182,18 @@ canvas.addEventListener('mousemove',hit);document.querySelector('#noSideBtn').on
 </script>
 <script>
 const fieldMaps = {
-  '6_6': { file: 'halbach_field_6_6_top_core.png', motion: 'cogging_motion_6_6.gif', curve: 'cogging_force_curve_6_6.png', label: '6 : 6 基础 Halbach' },
-  '8_4': { file: 'halbach_field_8_4_top_core.png', motion: 'cogging_motion_8_4.gif', curve: 'cogging_force_curve_8_4.png', label: '8 : 4 Halbach' },
-  '10_2': { file: 'halbach_field_10_2_top_core.png', motion: 'cogging_motion_10_2.gif', curve: 'cogging_force_curve_10_2.png', label: '10 : 2 Halbach' },
-  '11_1': { file: 'halbach_field_11_1_top_core.png', motion: 'cogging_motion_11_1.gif', curve: 'cogging_force_curve_11_1.png', label: '11 : 1 Halbach' },
-  '10_2_no_side': { file: 'halbach_field_10_2_no_side_top_core.png', motion: 'cogging_motion_10_2_no_side.gif', curve: 'cogging_force_curve_10_2_no_side.png', label: '10 : 2 无侧片磁铁' },
-  '10_2_skew_14_04': { file: 'halbach_field_10_2_skew_14_04_top_core.png', motion: 'cogging_motion_10_2_skew_14_04.gif', curve: 'cogging_force_curve_10_2_skew_14_04.png', label: '10 : 2 无侧片 14.04° 斜贴边缘截面' },
-  '10_2_skew': { file: 'halbach_field_10_2_skew_26_6_top_core.png', motion: 'cogging_motion_10_2_skew.gif', curve: 'cogging_force_curve_10_2_skew.png', label: '10 : 2 无侧片 26.6° 斜贴边缘截面' },
+  '6_6': { file: 'halbach_field_6_6_top_core.png', motion: 'cogging_motion_6_6.gif', curve: 'cogging_force_curve_6_6.png', thrust: 'foc_thrust_curve_6_6.png', label: '6 : 6 基础 Halbach' },
+  '8_4': { file: 'halbach_field_8_4_top_core.png', motion: 'cogging_motion_8_4.gif', curve: 'cogging_force_curve_8_4.png', thrust: 'foc_thrust_curve_8_4.png', label: '8 : 4 Halbach' },
+  '10_2': { file: 'halbach_field_10_2_top_core.png', motion: 'cogging_motion_10_2.gif', curve: 'cogging_force_curve_10_2.png', thrust: 'foc_thrust_curve_10_2.png', label: '10 : 2 Halbach' },
+  '11_1': { file: 'halbach_field_11_1_top_core.png', motion: 'cogging_motion_11_1.gif', curve: 'cogging_force_curve_11_1.png', thrust: 'foc_thrust_curve_11_1.png', label: '11 : 1 Halbach' },
+  '10_2_no_side': { file: 'halbach_field_10_2_no_side_top_core.png', motion: 'cogging_motion_10_2_no_side.gif', curve: 'cogging_force_curve_10_2_no_side.png', thrust: 'foc_thrust_curve_10_2_no_side.png', label: '10 : 2 无侧片磁铁' },
+  '10_2_skew_14_04': { file: 'halbach_field_10_2_skew_14_04_top_core.png', motion: 'cogging_motion_10_2_skew_14_04.gif', curve: 'cogging_force_curve_10_2_skew_14_04.png', thrust: 'foc_thrust_curve_10_2_skew_14_04.png', label: '10 : 2 无侧片 14.04° 斜贴边缘截面' },
+  '10_2_skew': { file: 'halbach_field_10_2_skew_26_6_top_core.png', motion: 'cogging_motion_10_2_skew.gif', curve: 'cogging_force_curve_10_2_skew.png', thrust: 'foc_thrust_curve_10_2_skew.png', label: '10 : 2 无侧片 26.6° 斜贴边缘截面' },
 };
 const fieldMap = document.querySelector('#fieldMap');
 const motionMap = document.querySelector('#motionMap');
 const forceCurve = document.querySelector('#forceCurve');
+  const thrustCurve = document.querySelector('#thrustCurve');
 const mapLabel = document.querySelector('#mapLabel');
 const motionStatus = document.querySelector('#motionStatus');
 const animationRevision = 'roundtrip-24-v1';
@@ -204,6 +207,8 @@ for (const button of document.querySelectorAll('.mapButton')) {
     motionMap.alt = `${map.label} 铁芯运动与齿槽力动画`;
     forceCurve.src = `${map.curve}?v=${animationRevision}`;
     forceCurve.alt = `${map.label} 齿槽力随位置变化曲线`;
+    thrustCurve.src = `${map.thrust}?v=${animationRevision}`;
+    thrustCurve.alt = `${map.label} 相同 Iq 下的 FOC 推力曲线`;
     mapLabel.textContent = map.label;
     for (const item of document.querySelectorAll('.mapButton')) item.classList.toggle('active', item === button);
   };

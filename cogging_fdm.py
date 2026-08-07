@@ -16,10 +16,17 @@ TOOTH = 5.0
 PERIOD = 48.0
 GAP = 1.0
 H = 0.5
+COIL_TURNS = 266
+ACTIVE_STACK_M = 16e-3
+IQ_PEAK_A = 4.0
+TOOTH_CENTERS = np.array([2.5, 18.5, 34.5])
+# A one-sixth third-harmonic injection gives the requested saddle-wave current.
+SADDLE_THIRD_HARMONIC = 1.0 / 6.0
 SINGLE_CORE = "--single-core" in sys.argv
 CORE_OTHER_SIDE = "--core-other-side" in sys.argv
 NO_SIDE = "--no-side" in sys.argv
-CURVE_ONLY = "--curve-only" in sys.argv
+THRUST_CURVE = "--thrust-curve" in sys.argv
+CURVE_ONLY = "--curve-only" in sys.argv or THRUST_CURVE
 ANIMATE = "--animate" in sys.argv or CURVE_ONLY
 ANIMATION_FRAMES = int(sys.argv[sys.argv.index("--frames") + 1]) if "--frames" in sys.argv else 200
 if ANIMATION_FRAMES < 4 or ANIMATION_FRAMES % 2:
@@ -168,6 +175,17 @@ def solve_fields(position, skew_offset, array):
     return by, bz
 
 
+def tooth_flux_linkages(bz):
+    """Return flux linkages for the three 5 mm tooth faces in the air gap."""
+    gap_row = np.argmin(np.abs(Z - 3.25))
+    linkages = []
+    for center in TOOTH_CENTERS:
+        tooth = (Y >= center - TOOTH / 2) & (Y <= center + TOOTH / 2)
+        flux_wb = np.trapezoid(bz[gap_row, tooth], Y[tooth] * 1e-3) * ACTIVE_STACK_M
+        linkages.append(COIL_TURNS * flux_wb)
+    return np.asarray(linkages)
+
+
 def slice_energy(position, skew_offset, array):
     by, bz = solve_fields(position, skew_offset, array)
     # Coenergy density in the linearized material model, per metre of x width.
@@ -246,6 +264,7 @@ if ANIMATE:
     core_positions = np.concatenate((sample_positions, sample_positions[::-1]))
     magnitudes_mt = []
     energies = []
+    phase_flux_linkages = []
     visual_skew_offset = skew_shift / 2 if abs(skew_shift) > 1e-9 else 0.0
     force_skew_offsets = np.linspace(-skew_shift / 2, skew_shift / 2, 3) if abs(skew_shift) > 1e-9 else np.array([0.0])
     for core_position in sample_positions:
@@ -254,6 +273,7 @@ if ANIMATE:
         by, bz = solve_fields(-core_position, visual_skew_offset, array)
         magnitudes_mt.append(np.hypot(by, bz) * 1e3)
         slice_energies = []
+        slice_linkages = []
         for offset in force_skew_offsets:
             if abs(offset - visual_skew_offset) < 1e-9:
                 slice_by, slice_bz = by, bz
@@ -261,8 +281,20 @@ if ANIMATE:
                 slice_by, slice_bz = solve_fields(-core_position, offset, array)
             density = (slice_by * slice_by + slice_bz * slice_bz) / (2 * MU0 * MU_R)
             slice_energies.append(density.sum() * (H * 1e-3) ** 2)
+            slice_linkages.append(tooth_flux_linkages(slice_bz))
         energies.append(float(np.mean(slice_energies)) * 16e-3)
+        phase_flux_linkages.append(np.mean(slice_linkages, axis=0))
     force_samples = -np.gradient(np.asarray(energies), sample_positions * 1e-3)
+    phase_flux_linkages = np.asarray(phase_flux_linkages)
+    electrical_angle = 2 * np.pi * sample_positions[:, None] / 24.0
+    # Identify each phase d-axis from its computed fundamental flux linkage.
+    # This keeps the q-axis current orthogonal to the actual finite-array field.
+    d_axis = np.angle(np.sum(phase_flux_linkages * np.exp(-1j * electrical_angle), axis=0))
+    current_angle = electrical_angle + d_axis
+    phase_currents = -(np.sin(current_angle) + SADDLE_THIRD_HARMONIC * np.sin(3 * current_angle))
+    phase_currents *= IQ_PEAK_A / np.max(np.abs(phase_currents))
+    linkage_gradient = np.gradient(phase_flux_linkages, sample_positions * 1e-3, axis=0)
+    thrust_samples = np.sum(phase_currents * linkage_gradient, axis=1)
     forces = np.concatenate((force_samples, force_samples[::-1]))
     magnitudes_mt = magnitudes_mt + list(reversed(magnitudes_mt))
     max_force = max(float(np.max(np.abs(forces))), 1e-9)
@@ -320,6 +352,8 @@ if ANIMATE:
         print(json.dumps({"animation_preview": preview_path, "frame": 0}, ensure_ascii=False))
         sys.exit(0)
 
+    curve_path = None
+    thrust_path = None
     if "--curve" in sys.argv:
         curve_path = sys.argv[sys.argv.index("--curve") + 1]
         curve_figure, curve_axis = plt.subplots(figsize=(11, 4.5), constrained_layout=True)
@@ -345,8 +379,34 @@ if ANIMATE:
         curve_figure.savefig(curve_path, dpi=160)
         plt.close(curve_figure)
 
+    if THRUST_CURVE:
+        thrust_path = sys.argv[sys.argv.index("--thrust-curve") + 1]
+        thrust_figure, thrust_axis = plt.subplots(figsize=(11, 4.5), constrained_layout=True)
+        mean_thrust = float(np.mean(thrust_samples))
+        thrust_axis.plot(sample_positions, thrust_samples, color="#059669", linewidth=2.2, label="FOC thrust")
+        thrust_axis.fill_between(sample_positions, thrust_samples, mean_thrust, color="#059669", alpha=0.12)
+        thrust_axis.axhline(mean_thrust, color="#475569", linestyle="--", linewidth=1.2, label=f"Mean = {mean_thrust:.3f} N")
+        thrust_axis.set(
+            title="FOC saddle-wave thrust at Iq = 4 A",
+            xlabel="Core position x (mm)",
+            ylabel="Thrust F (N)",
+            xlim=(-24, 24),
+        )
+        thrust_axis.grid(alpha=0.25)
+        thrust_axis.legend(loc="upper right", fontsize=8)
+        thrust_figure.savefig(thrust_path, dpi=160)
+        plt.close(thrust_figure)
+
     if CURVE_ONLY:
-        print(json.dumps({"curve": curve_path if "--curve" in sys.argv else None, "samples": len(sample_positions), "force_peak_to_peak_N": round(float(forces.max() - forces.min()), 4)}, ensure_ascii=False))
+        print(json.dumps({
+            "curve": curve_path,
+            "thrust_curve": thrust_path,
+            "samples": len(sample_positions),
+            "force_peak_to_peak_N": round(float(forces.max() - forces.min()), 4),
+            "thrust_mean_N": round(float(np.mean(thrust_samples)), 4),
+            "thrust_peak_to_peak_N": round(float(np.ptp(thrust_samples)), 4),
+            "iq_peak_A": IQ_PEAK_A,
+        }, ensure_ascii=False))
         sys.exit(0)
 
     movie = animation.FuncAnimation(figure, draw_frame, frames=len(core_positions), interval=120)
