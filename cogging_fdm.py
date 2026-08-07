@@ -205,7 +205,7 @@ if "--render" in sys.argv:
         view_magnitude_mt = np.tile(magnitude_mt, (1, 3))
     figure, axis = plt.subplots(figsize=(14, 7), constrained_layout=True)
     image = axis.imshow(np.log10(np.clip(view_magnitude_mt, 1, 2000)), origin="lower", extent=(view_y[0] - H / 2, view_y[-1] + H / 2, Z_MIN, Z_MAX), aspect="equal", cmap="turbo")
-    axis.streamplot(view_y, Z, view_by, view_bz, density=1.4, color="white", linewidth=0.55, arrowsize=0.6)
+    axis.streamplot(view_y, Z, view_by, view_bz, density=2.4, color="white", linewidth=0.55, arrowsize=0.6)
     profile = CORE_DXF
     axis.plot(np.r_[profile[:, 0], profile[0, 0]], np.r_[profile[:, 1], profile[0, 1]], color="white", linewidth=1.35, zorder=5)
     if array in HALBACH_WIDTHS and not NO_SIDE:
