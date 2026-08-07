@@ -17,6 +17,6 @@
 #### Acceptance Criteria
 
 1. THE field-map generator SHALL render one 10:2 no-side-magnet field map with a 14.04 degree skew angle.
-2. THE field-map generator SHALL export one 90-frame animation for the 14.04 degree skew scenario with the core moving in the sequence -24 mm, +24 mm, -24 mm.
+2. THE field-map generator SHALL export one 200-frame animation for the 14.04 degree skew scenario with the core moving in the sequence -24 mm, +24 mm, -24 mm.
 3. THE field-map generator SHALL export one cogging-force curve for the 14.04 degree skew scenario.
 4. WHEN a viewer selects the 14.04 degree skew scenario, THE web page SHALL display the matching field map, animation, force curve, and scenario label.

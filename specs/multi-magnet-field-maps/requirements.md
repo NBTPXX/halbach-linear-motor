@@ -23,7 +23,7 @@
 3. THE field-map generator SHALL align the center of the five-group magnet array with the geometric center of the DXF iron core.
 4. THE field-map renderer SHALL draw the outline of every magnet block included in the solution.
 5. THE field-map generator SHALL rotate the DXF iron core by 180 degrees and place the tooth tips 1 mm above the magnet array.
-6. THE field-map generator SHALL export a 90-frame GIF for each field-map scenario with the iron core moving in the sequence -24 mm, +24 mm, -24 mm relative to the magnet array.
+6. THE field-map generator SHALL export a 200-frame GIF for each field-map scenario with the iron core moving in the sequence -24 mm, +24 mm, -24 mm relative to the magnet array.
 7. THE GIF renderer SHALL show a force-direction arrow on the iron core, scale the arrow length by the instantaneous cogging-force magnitude, and display the core position and force value.
 8. THE field-map generator SHALL export a cogging-force versus core-position curve for each GIF scenario.
 

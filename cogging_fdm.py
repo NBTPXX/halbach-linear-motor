@@ -20,7 +20,9 @@ SINGLE_CORE = "--single-core" in sys.argv
 CORE_OTHER_SIDE = "--core-other-side" in sys.argv
 NO_SIDE = "--no-side" in sys.argv
 ANIMATE = "--animate" in sys.argv
-ANIMATION_FRAMES = int(sys.argv[sys.argv.index("--frames") + 1]) if "--frames" in sys.argv else 90
+ANIMATION_FRAMES = int(sys.argv[sys.argv.index("--frames") + 1]) if "--frames" in sys.argv else 200
+if ANIMATION_FRAMES < 4 or ANIMATION_FRAMES % 2:
+    raise SystemExit("--frames must be an even integer of at least 4")
 MAGNET_GROUPS = int(sys.argv[sys.argv.index("--magnet-groups") + 1]) if "--magnet-groups" in sys.argv else 5
 CORE_CENTER_Y = 18.5
 MAGNET_START = CORE_CENTER_Y - 12.0 * MAGNET_GROUPS
