@@ -328,15 +328,16 @@ if ANIMATE:
         force_fft = np.fft.rfft(force_samples - force_samples.mean())
         component_indexes = np.argsort(np.abs(force_fft[1:]))[-3:] + 1
         component_indexes = component_indexes[np.argsort(np.abs(force_fft[component_indexes]))[::-1]]
-        sample_indexes = np.arange(len(force_samples))
+        display_positions = np.linspace(sample_positions[0], sample_positions[-1], 1000)
+        display_indexes = (display_positions - sample_positions[0]) / (sample_positions[1] - sample_positions[0])
         sample_step = sample_positions[1] - sample_positions[0]
         component_colors = ("#dc2626", "#d97706", "#7c3aed")
         for component_index, color in zip(component_indexes, component_colors):
             amplitude = 2 * abs(force_fft[component_index]) / len(force_samples)
             phase = np.angle(force_fft[component_index])
-            component = amplitude * np.cos(2 * np.pi * component_index * sample_indexes / len(force_samples) + phase)
+            component = amplitude * np.cos(2 * np.pi * component_index * display_indexes / len(force_samples) + phase)
             period_mm = sample_step * len(force_samples) / component_index
-            curve_axis.plot(sample_positions, component, "--", color=color, linewidth=1.35, label=f"FFT {period_mm:.2f} mm, A={amplitude:.3f} N")
+            curve_axis.plot(display_positions, component, "--", color=color, linewidth=1.35, label=f"FFT {period_mm:.2f} mm, A={amplitude:.3f} N")
         curve_axis.axhline(0.0, color="#64748b", linewidth=1)
         curve_axis.set(title="Cogging force with leading FFT components", xlabel="Core position x (mm)", ylabel="Cogging force F (N)", xlim=(-24, 24))
         curve_axis.grid(alpha=0.25)
