@@ -20,8 +20,6 @@ COIL_TURNS = 266
 ACTIVE_STACK_M = 16e-3
 IQ_PEAK_A = 4.0
 TOOTH_CENTERS = np.array([2.5, 18.5, 34.5])
-# A one-sixth third-harmonic injection gives the requested saddle-wave current.
-SADDLE_THIRD_HARMONIC = 1.0 / 6.0
 SINGLE_CORE = "--single-core" in sys.argv
 CORE_OTHER_SIDE = "--core-other-side" in sys.argv
 NO_SIDE = "--no-side" in sys.argv
@@ -291,8 +289,9 @@ if ANIMATE:
     # This keeps the q-axis current orthogonal to the actual finite-array field.
     d_axis = np.angle(np.sum(phase_flux_linkages * np.exp(-1j * electrical_angle), axis=0))
     current_angle = electrical_angle + d_axis
-    phase_currents = -(np.sin(current_angle) + SADDLE_THIRD_HARMONIC * np.sin(3 * current_angle))
-    phase_currents *= IQ_PEAK_A / np.max(np.abs(phase_currents))
+    # SVPWM adds common-mode voltage, while delta branch currents remain balanced
+    # fundamental q-axis currents. Iq here is the winding-branch peak current.
+    phase_currents = -IQ_PEAK_A * np.sin(current_angle)
     linkage_gradient = np.gradient(phase_flux_linkages, sample_positions * 1e-3, axis=0)
     thrust_samples = np.sum(phase_currents * linkage_gradient, axis=1)
     forces = np.concatenate((force_samples, force_samples[::-1]))
@@ -400,7 +399,7 @@ if ANIMATE:
             period_mm = sample_step * len(thrust_samples) / component_index
             thrust_axis.plot(display_positions, component, "--", color=color, linewidth=1.35, label=f"FFT {period_mm:.2f} mm, A={amplitude:.3f} N")
         thrust_axis.set(
-            title="FOC saddle-wave thrust with leading FFT components at Iq = 4 A",
+            title="SVPWM delta FOC thrust with leading FFT components at Iq = 4 A",
             xlabel="Core position x (mm)",
             ylabel="Thrust F (N)",
             xlim=(-24, 24),
