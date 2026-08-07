@@ -31,6 +31,7 @@ IQ_PEAK_A = 4.0
 TOOTH_CENTERS = np.array([2.5, 18.5, 34.5])
 SINGLE_CORE = "--single-core" in sys.argv
 CORE_OTHER_SIDE = "--core-other-side" in sys.argv
+NO_CORE = "--no-core" in sys.argv
 NO_SIDE = "--no-side" in sys.argv
 THRUST_CURVE = "--thrust-curve" in sys.argv
 CURVE_ONLY = "--curve-only" in sys.argv or THRUST_CURVE
@@ -84,6 +85,8 @@ def inside_core(travel, height):
 
 def material():
     mu_r = np.ones((Z_CELLS, Y_CELLS))
+    if NO_CORE:
+        return mu_r
     travel, height = np.meshgrid(Y, Z)
     # Periodic force studies need neighboring cells; field renders use only the supplied outline.
     core = inside_core(travel, height)
@@ -235,8 +238,9 @@ if "--render" in sys.argv:
     figure, axis = plt.subplots(figsize=(14, 7), constrained_layout=True)
     image = axis.imshow(np.log10(np.clip(view_magnitude_mt, 1, 2000)), origin="lower", extent=(view_y[0] - H / 2, view_y[-1] + H / 2, Z_MIN, Z_MAX), aspect="equal", cmap="turbo")
     axis.streamplot(view_y, Z, view_by, view_bz, density=2.4, color="white", linewidth=0.55, arrowsize=0.6)
-    profile = CORE_DXF
-    axis.plot(np.r_[profile[:, 0], profile[0, 0]], np.r_[profile[:, 1], profile[0, 1]], color="white", linewidth=1.35, zorder=5)
+    if not NO_CORE:
+        profile = CORE_DXF
+        axis.plot(np.r_[profile[:, 0], profile[0, 0]], np.r_[profile[:, 1], profile[0, 1]], color="white", linewidth=1.35, zorder=5)
     if array in HALBACH_WIDTHS and not NO_SIDE:
         main_width = HALBACH_WIDTHS[array]
         side_width = 12.0 - main_width
@@ -252,7 +256,7 @@ if "--render" in sys.argv:
             axis.text(group_start + start + width / 2, 1.5, label, ha="center", va="center", color="white", fontsize=8, weight="bold", zorder=7)
     colorbar = figure.colorbar(image, ax=axis, pad=0.02)
     colorbar.set_label("log10 |B| (mT)")
-    model_name = "single DXF iron core with finite magnet array" if SINGLE_CORE else "periodic DXF iron-core cells"
+    model_name = "finite magnet array without iron core" if NO_CORE else ("single DXF iron core with finite magnet array" if SINGLE_CORE else "periodic DXF iron-core cells")
     if CORE_OTHER_SIDE:
         model_name += ", core rotated 180 degrees above magnets"
     if NO_SIDE:
