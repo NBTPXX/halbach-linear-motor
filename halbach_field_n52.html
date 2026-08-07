@@ -49,7 +49,7 @@
     <div class="note"><span class="key">斜极取舍</span>：14.04° 的磁场基波系数约 0.955，适合推力优先；26.565° 的系数约 0.827，适合齿槽力优先。实际残余力由 B-H 曲线、端部磁通、加工与装配误差决定。</div>
     <div class="note">色图由二维磁矢势方程求解：DXF 闭合轮廓在网格内赋予 35W300 的线性 μr≈4000，气隙为 1 mm，磁铁厚度为 3 mm。铁芯绕其中心旋转 180°，齿顶位于磁铁顶面上方 1 mm。求解域随五组磁铁阵列扩展，四周采用远离模型的固定磁矢势边界；铁芯位于画面中心，左右侧磁铁单元数相同，所有磁铁块均绘制轮廓。</div>
     <div class="note">每种磁铁排布均提供 200 帧动画，展示铁芯按 -24 mm、+24 mm、-24 mm 的顺序往复运动。曲线使用 100 个单程位置点计算。白色箭头表示计算得到的齿槽力方向，箭头长度随力值绝对值变化，箭头上方显示当前位置与瞬时齿槽力。动画下方曲线给出齿槽力 F 随位置 x 的变化。</div>
-    <div class="note"><span class="key">SVPWM Δ 接 FOC 推力模型</span>：三齿三相集中绕组，每相 266 匝、0.4 mm 线径、有效叠厚 16 mm。Iq=4 A 定义为 Δ 每个绕组支路的基波 q 轴峰值电流，对应线电流峰值约 6.93 A。SVPWM 注入的是零序电压以扩展调制范围；支路电流采用平衡基波，避免将三次谐波环流计入有效推力。推力由各齿气隙磁链的位置导数与瞬时相电流相乘计算，未叠加齿槽力。</div>
+    <div class="note"><span class="key">SVPWM Δ 接 FOC 推力模型</span>：三齿三相集中绕组，每相 266 匝、0.4 mm 线径、有效叠厚 16 mm。Iq=4 A 定义为 Δ 每个绕组支路的基波 q 轴峰值电流，对应线电流峰值约 6.93 A。SVPWM 注入的是零序电压以扩展调制范围；支路电流采用平衡基波，避免将三次谐波环流计入有效推力。磁铁边界在每个 0.5 mm 网格单元内使用 8 点体积分数平均，避免边界跨单元跳变被磁链微分放大。推力由各齿气隙磁链的位置导数与瞬时相电流相乘计算，未叠加齿槽力。</div>
   </div>
 </main>
 <script type="application/json">
@@ -196,7 +196,7 @@ const forceCurve = document.querySelector('#forceCurve');
   const thrustCurve = document.querySelector('#thrustCurve');
 const mapLabel = document.querySelector('#mapLabel');
 const motionStatus = document.querySelector('#motionStatus');
-const animationRevision = 'roundtrip-24-v1-svpwm-delta-v1';
+const animationRevision = 'roundtrip-24-v1-svpwm-delta-subcell-v1';
 for (const button of document.querySelectorAll('.mapButton')) {
   button.onclick = () => {
     const map = fieldMaps[button.dataset.map];

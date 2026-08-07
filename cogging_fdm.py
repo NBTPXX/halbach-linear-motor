@@ -16,6 +16,7 @@ TOOTH = 5.0
 PERIOD = 48.0
 GAP = 1.0
 H = 0.5
+MAGNET_SUBCELL_SAMPLES = 8
 COIL_TURNS = 266
 ACTIVE_STACK_M = 16e-3
 IQ_PEAK_A = 4.0
@@ -136,7 +137,10 @@ def magnet_br(position, skew_offset, array):
     br_y = np.zeros((Z_CELLS, Y_CELLS))
     br_z = np.zeros((Z_CELLS, Y_CELLS))
     in_thickness = (Z >= 0.0) & (Z < 3.0)
-    phase = Y - position - skew_offset
+    # Average magnetization over each finite-volume cell. A binary assignment at
+    # the cell centre makes a moving magnet edge jump by one full 0.5 mm column.
+    subcell_y = Y[:, None] + H * (np.arange(MAGNET_SUBCELL_SAMPLES) + 0.5) / MAGNET_SUBCELL_SAMPLES - H / 2
+    phase = subcell_y - position - skew_offset
     if not SINGLE_CORE:
         phase = np.mod(phase, 24.0)
         active_unit = np.ones_like(phase, dtype=bool)
@@ -147,12 +151,12 @@ def magnet_br(position, skew_offset, array):
     if array in HALBACH_WIDTHS and not NO_SIDE:
         # One 24 mm pole pair: +Z, -Y, -Z, +Y. The normal/tangential widths sum to 12 mm.
         main_width = HALBACH_WIDTHS[array]
-        br_z_line = np.where(active_unit & (phase < main_width), BR, np.where(active_unit & (phase >= 12.0) & (phase < 12.0 + main_width), -BR, 0.0))
-        br_y_line = np.where(active_unit & (phase >= main_width) & (phase < 12.0), -BR, np.where(active_unit & (phase >= 12.0 + main_width), BR, 0.0))
+        br_z_line = np.where(active_unit & (phase < main_width), BR, np.where(active_unit & (phase >= 12.0) & (phase < 12.0 + main_width), -BR, 0.0)).mean(axis=1)
+        br_y_line = np.where(active_unit & (phase >= main_width) & (phase < 12.0), -BR, np.where(active_unit & (phase >= 12.0 + main_width), BR, 0.0)).mean(axis=1)
     else:
         main_width = HALBACH_WIDTHS.get(array, 10.0)
-        br_z_line = np.where(active_unit & (phase < main_width), BR, np.where(active_unit & (phase >= 12.0) & (phase < 12.0 + main_width), -BR, 0.0))
-        br_y_line = np.zeros_like(phase)
+        br_z_line = np.where(active_unit & (phase < main_width), BR, np.where(active_unit & (phase >= 12.0) & (phase < 12.0 + main_width), -BR, 0.0)).mean(axis=1)
+        br_y_line = np.zeros_like(br_z_line)
     br_z[in_thickness, :] = br_z_line
     br_y[in_thickness, :] = br_y_line
     return br_y, br_z
