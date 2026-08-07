@@ -16,9 +16,14 @@ PITCH = 16.0
 TOOTH = 5.0
 PERIOD = 48.0
 GAP = 1.0
-H = 0.5
+# A 0.25 mm field grid resolves the moving magnet edges well enough for the
+# short coenergy derivative window to retain the physical cogging harmonic.
+H = 0.25
 MAGNET_SUBCELL_SAMPLES = 8
-COENERGY_SMOOTH_WINDOW = 9
+# At the 100-point, 48 mm travel sampling interval this spans 2.42 mm, below
+# the resolved 4 mm cogging period. A wider 9-point window attenuates that
+# physical fundamental and leaves the finite-array envelope dominant.
+COENERGY_SMOOTH_WINDOW = 5
 COENERGY_SMOOTH_ORDER = 3
 COIL_TURNS = 266
 ACTIVE_STACK_M = 16e-3
@@ -291,8 +296,8 @@ if ANIMATE:
         phase_flux_linkages.append(np.mean(slice_linkages, axis=0))
     sample_step_m = (sample_positions[1] - sample_positions[0]) * 1e-3
     # Differentiate a local polynomial fit to coenergy rather than raw cell-level
-    # energy samples. This preserves the resolved 4 mm cogging content while
-    # rejecting residual sub-cell boundary noise before it becomes a force spike.
+    # energy samples. The 5-point window suppresses residual sub-cell noise
+    # while retaining the resolved 4 mm cogging fundamental.
     force_samples = -savgol_filter(
         np.asarray(energies),
         COENERGY_SMOOTH_WINDOW,
