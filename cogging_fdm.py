@@ -4,6 +4,7 @@ import sys
 import numpy as np
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import splu
+from scipy.signal import savgol_filter
 
 # Linear 2D magnetic-vector-potential approximation.
 # y is the travel direction and z points from the stator toward the magnets.
@@ -17,6 +18,8 @@ PERIOD = 48.0
 GAP = 1.0
 H = 0.5
 MAGNET_SUBCELL_SAMPLES = 8
+COENERGY_SMOOTH_WINDOW = 9
+COENERGY_SMOOTH_ORDER = 3
 COIL_TURNS = 266
 ACTIVE_STACK_M = 16e-3
 IQ_PEAK_A = 4.0
@@ -286,7 +289,18 @@ if ANIMATE:
             slice_linkages.append(tooth_flux_linkages(slice_bz))
         energies.append(float(np.mean(slice_energies)) * 16e-3)
         phase_flux_linkages.append(np.mean(slice_linkages, axis=0))
-    force_samples = -np.gradient(np.asarray(energies), sample_positions * 1e-3)
+    sample_step_m = (sample_positions[1] - sample_positions[0]) * 1e-3
+    # Differentiate a local polynomial fit to coenergy rather than raw cell-level
+    # energy samples. This preserves the resolved 4 mm cogging content while
+    # rejecting residual sub-cell boundary noise before it becomes a force spike.
+    force_samples = -savgol_filter(
+        np.asarray(energies),
+        COENERGY_SMOOTH_WINDOW,
+        COENERGY_SMOOTH_ORDER,
+        deriv=1,
+        delta=sample_step_m,
+        mode="interp",
+    )
     phase_flux_linkages = np.asarray(phase_flux_linkages)
     electrical_angle = 2 * np.pi * sample_positions[:, None] / 24.0
     # Identify each phase d-axis from its computed fundamental flux linkage.
