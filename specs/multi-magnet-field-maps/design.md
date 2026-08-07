@@ -12,6 +12,7 @@ Updated: 2026-08-06
 - `cogging_fdm.py`：新增有限磁铁阵列参数、无侧片方案和 14.04 度、26.565 度斜贴几何，导出 PNG 场图。
 - `halbach_field_n52.html`：为全部预计算场图提供选择按钮和场景说明。
 - `cogging_fdm.py --animate`：以 200 帧计算有限阵列的移动位置能量导数并导出带齿槽力箭头的 GIF 与力-位置曲线；曲线使用 100 个单程位置点。
+- `cogging_fdm.py --curve-only`：复用 100 个位置点计算力曲线，利用 FFT 提取三个幅值最大的非直流分量，并以虚线叠加显示。
 
 ## Correctness Properties
 

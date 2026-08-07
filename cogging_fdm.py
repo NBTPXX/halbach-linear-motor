@@ -19,7 +19,8 @@ H = 0.5
 SINGLE_CORE = "--single-core" in sys.argv
 CORE_OTHER_SIDE = "--core-other-side" in sys.argv
 NO_SIDE = "--no-side" in sys.argv
-ANIMATE = "--animate" in sys.argv
+CURVE_ONLY = "--curve-only" in sys.argv
+ANIMATE = "--animate" in sys.argv or CURVE_ONLY
 ANIMATION_FRAMES = int(sys.argv[sys.argv.index("--frames") + 1]) if "--frames" in sys.argv else 200
 if ANIMATION_FRAMES < 4 or ANIMATION_FRAMES % 2:
     raise SystemExit("--frames must be an even integer of at least 4")
@@ -235,12 +236,12 @@ if "--render" in sys.argv:
     print(json.dumps({"field_map": output_path, "array": array, "iron_area_mm2": round(IRON_AREA_MM2, 3)}, ensure_ascii=False))
     sys.exit(0)
 
-if "--animate" in sys.argv:
+if ANIMATE:
     from matplotlib import animation
     from matplotlib import pyplot as plt
     from matplotlib.patches import Rectangle
 
-    output_path = sys.argv[sys.argv.index("--animate") + 1]
+    output_path = sys.argv[sys.argv.index("--animate") + 1] if "--animate" in sys.argv else None
     sample_positions = np.linspace(-24.0, 24.0, ANIMATION_FRAMES // 2)
     core_positions = np.concatenate((sample_positions, sample_positions[::-1]))
     magnitudes_mt = []
@@ -322,13 +323,30 @@ if "--animate" in sys.argv:
     if "--curve" in sys.argv:
         curve_path = sys.argv[sys.argv.index("--curve") + 1]
         curve_figure, curve_axis = plt.subplots(figsize=(11, 4.5), constrained_layout=True)
-        curve_axis.plot(sample_positions, force_samples, color="#2563eb", linewidth=2.2)
+        curve_axis.plot(sample_positions, force_samples, color="#2563eb", linewidth=2.2, label="Total cogging force")
         curve_axis.fill_between(sample_positions, force_samples, 0.0, color="#2563eb", alpha=0.12)
+        force_fft = np.fft.rfft(force_samples - force_samples.mean())
+        component_indexes = np.argsort(np.abs(force_fft[1:]))[-3:] + 1
+        component_indexes = component_indexes[np.argsort(np.abs(force_fft[component_indexes]))[::-1]]
+        sample_indexes = np.arange(len(force_samples))
+        sample_step = sample_positions[1] - sample_positions[0]
+        component_colors = ("#dc2626", "#d97706", "#7c3aed")
+        for component_index, color in zip(component_indexes, component_colors):
+            amplitude = 2 * abs(force_fft[component_index]) / len(force_samples)
+            phase = np.angle(force_fft[component_index])
+            component = amplitude * np.cos(2 * np.pi * component_index * sample_indexes / len(force_samples) + phase)
+            period_mm = sample_step * len(force_samples) / component_index
+            curve_axis.plot(sample_positions, component, "--", color=color, linewidth=1.35, label=f"FFT {period_mm:.2f} mm, A={amplitude:.3f} N")
         curve_axis.axhline(0.0, color="#64748b", linewidth=1)
-        curve_axis.set(title="Cogging force versus core position", xlabel="Core position x (mm)", ylabel="Cogging force F (N)", xlim=(-24, 24))
+        curve_axis.set(title="Cogging force with leading FFT components", xlabel="Core position x (mm)", ylabel="Cogging force F (N)", xlim=(-24, 24))
         curve_axis.grid(alpha=0.25)
+        curve_axis.legend(loc="upper right", fontsize=8)
         curve_figure.savefig(curve_path, dpi=160)
         plt.close(curve_figure)
+
+    if CURVE_ONLY:
+        print(json.dumps({"curve": curve_path if "--curve" in sys.argv else None, "samples": len(sample_positions), "force_peak_to_peak_N": round(float(forces.max() - forces.min()), 4)}, ensure_ascii=False))
+        sys.exit(0)
 
     movie = animation.FuncAnimation(figure, draw_frame, frames=len(core_positions), interval=120)
     movie.save(output_path, writer=animation.PillowWriter(fps=15), dpi=110)

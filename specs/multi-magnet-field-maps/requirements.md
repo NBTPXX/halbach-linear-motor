@@ -26,6 +26,7 @@
 6. THE field-map generator SHALL export a 200-frame GIF for each field-map scenario with the iron core moving in the sequence -24 mm, +24 mm, -24 mm relative to the magnet array.
 7. THE GIF renderer SHALL show a force-direction arrow on the iron core, scale the arrow length by the instantaneous cogging-force magnitude, and display the core position and force value.
 8. THE field-map generator SHALL export a cogging-force versus core-position curve for each GIF scenario.
+9. THE curve generator SHALL calculate the discrete Fourier transform of each force curve and render the three largest non-DC components as dashed lines with spatial-period and amplitude labels.
 
 ### Requirement 2
 
