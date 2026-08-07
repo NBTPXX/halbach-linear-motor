@@ -386,8 +386,21 @@ if ANIMATE:
         thrust_axis.plot(sample_positions, thrust_samples, color="#059669", linewidth=2.2, label="FOC thrust")
         thrust_axis.fill_between(sample_positions, thrust_samples, mean_thrust, color="#059669", alpha=0.12)
         thrust_axis.axhline(mean_thrust, color="#475569", linestyle="--", linewidth=1.2, label=f"Mean = {mean_thrust:.3f} N")
+        thrust_fft = np.fft.rfft(thrust_samples - mean_thrust)
+        component_indexes = np.argsort(np.abs(thrust_fft[1:]))[-3:] + 1
+        component_indexes = component_indexes[np.argsort(np.abs(thrust_fft[component_indexes]))[::-1]]
+        display_positions = np.linspace(sample_positions[0], sample_positions[-1], 1000)
+        display_indexes = (display_positions - sample_positions[0]) / (sample_positions[1] - sample_positions[0])
+        sample_step = sample_positions[1] - sample_positions[0]
+        component_colors = ("#dc2626", "#d97706", "#7c3aed")
+        for component_index, color in zip(component_indexes, component_colors):
+            amplitude = 2 * abs(thrust_fft[component_index]) / len(thrust_samples)
+            phase = np.angle(thrust_fft[component_index])
+            component = mean_thrust + amplitude * np.cos(2 * np.pi * component_index * display_indexes / len(thrust_samples) + phase)
+            period_mm = sample_step * len(thrust_samples) / component_index
+            thrust_axis.plot(display_positions, component, "--", color=color, linewidth=1.35, label=f"FFT {period_mm:.2f} mm, A={amplitude:.3f} N")
         thrust_axis.set(
-            title="FOC saddle-wave thrust at Iq = 4 A",
+            title="FOC saddle-wave thrust with leading FFT components at Iq = 4 A",
             xlabel="Core position x (mm)",
             ylabel="Thrust F (N)",
             xlim=(-24, 24),
